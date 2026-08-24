@@ -1,0 +1,6 @@
+DB_NAME = "neondb"
+DB_USER = "neondb_owner"
+DB_PASS = "npg_oOt8D6lXLVgi"
+DB_HOST = "ep-wild-haze-ayzrc32u-pooler.c-5.us-east-2.aws.neon.tech"
+CODE = "1176492"
+MDP = "AN2mw117"
