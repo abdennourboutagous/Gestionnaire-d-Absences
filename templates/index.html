@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Gestion Des Absences</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<div class="container">
+    <div class="nav-tabs">
+        <button class="tab-btn active" onclick="switchTab('absences-tab', this)">Vérifier Absences</button>
+        <button class="tab-btn" onclick="switchTab('eleves-tab', this); loadEleves();">Gérer Élèves</button>
+        <button class="tab-btn" onclick="switchTab('encadrants-tab', this); loadEncadrants();">Gérer Encadrants</button>
+    </div>
+
+    <div id="absences-tab" class="tab-content active">
+        <h2>Vérifier Les Absences</h2>
+        <div class="controls">
+            <input type="date" id="date">
+            <button onclick="loadAbsences()">Load</button>
+        </div>
+        
+        <!-- NOUVEAU : Boutons de sélection en masse pour les absences -->
+        <div class="table-actions-bar">
+            <div class="bulk-buttons">
+                <button onclick="toggleSelectAllAbsences(this)" id="btn-select-all-abs" style="background:#6b7280;">Sélectionner Tout</button>
+                <button onclick="deleteSelectedAbsences()" style="background:#dc2626;">Supprimer Sélection</button>
+            </div>
+        </div>
+
+        <table id="table">
+            <thead>
+                <tr>
+                    <th width="40px">Sélec.</th> <!-- NOUVEAU -->
+                    <th>Classe</th><th>Nom</th><th>Début</th><th>Fin</th><th>Motif</th><th>Justifiée</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <div class="actions">
+            <button onclick="saveAbsences()">Enregistrer et Remplir</button>
+        </div>
+    </div>
+
+    <div id="eleves-tab" class="tab-content">
+        <h2>Gestion des Élèves</h2>
+    
+        <hr>
+
+        <div class="crud-form controls">
+            <input type="text" id="el-nom" placeholder="Nom Complet">
+            <input type="text" id="el-classe" placeholder="Classe (ex: MPSI)">
+            <input type="text" id="el-code" placeholder="Code / CNE">
+            <button onclick="addEleve()">Ajouter</button>
+        </div>
+        <hr>
+        <div class="upload-section controls">
+            <input type="file" id="excel-file" accept=".xls,.xlsx">
+            <button onclick="uploadFile()">Importer Excel</button>
+        </div>
+        <hr>
+
+        <div class="table-actions-bar">
+            <div class="search-box">
+                <input type="text" id="search-eleve" placeholder="Rechercher nom, CNE, classe..." oninput="loadEleves()">
+            </div>
+            <div class="bulk-buttons">
+                <button onclick="toggleSelectAllEleves(this)" id="btn-select-all" style="background:#6b7280;">Sélectionner Tout</button>
+                <button onclick="deleteSelectedEleves()" style="background:#dc2626;">Supprimer Sélection</button>
+            </div>
+        </div>
+
+        <table id="eleves-table">
+            <thead>
+                <tr>
+                    <th width="40px">Sélec.</th>
+                    <th>Nom</th>
+                    <th>Classe</th>
+                    <th>Code (CNE)</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <div id="encadrants-tab" class="tab-content">
+        <h2>Gestion des Encadrants</h2>
+        <div class="crud-form controls">
+            <input type="text" id="en-nom" placeholder="Nom">
+    
+            <!-- MENU DÉROULANT AVEC CASES À COCHER -->
+            <div class="dropdown-checklist" tabindex="0">
+            <div class="dropdown-checklist-header" onclick="toggleChecklistMenu(event)">
+                Choisir les classes...
+            </div>
+            <div class="dropdown-checklist-menu" id="en-classes-checklist">
+                <label><input type="checkbox" value="MPSI-1"> MPSI-1</label>
+                <label><input type="checkbox" value="MPSI-2"> MPSI-2</label>
+                <label><input type="checkbox" value="1-TSI-1"> 1-TSI-1</label>
+                <label><input type="checkbox" value="1-TSI-2"> 1-TSI-2</label>
+                <label><input type="checkbox" value="MP-1"> MP-1</label>
+                <label><input type="checkbox" value="MP-2"> MP-2</label>
+                <label><input type="checkbox" value="2-TSI-1"> 2-TSI-1</label>
+                <label><input type="checkbox" value="2-TSI-2"> 2-TSI-2</label>
+            </div>
+        </div>
+
+        <input type="text" id="en-mdp" placeholder="Mot de Passe">
+        <button onclick="addEncadrant()">Ajouter</button>
+    </div>
+        <table id="encadrants-table">
+            <thead><tr><th>Nom</th><th>Classes</th><th>Mot de Passe</th><th>Action</th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+
+<script src="/static/main.js"></script>
+</body>
+</html>

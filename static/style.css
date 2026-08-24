@@ -1,0 +1,131 @@
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background:#f5f7fa;
+    margin:0;
+    padding:40px;
+}
+.container {
+    max-width:950px;
+    margin:auto;
+    background:white;
+    padding:25px;
+    border-radius:8px;
+    box-shadow:0 4px 12px rgba(0,0,0,0.08);
+}
+h2 { margin-top:0; margin-bottom:20px; }
+.controls, .table-actions-bar {
+    margin-bottom:20px;
+    display:flex;
+    gap:10px;
+    align-items: center;
+}
+.table-actions-bar {
+    justify-content: space-between;
+}
+.search-box input {
+    width: 280px;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+.excel-upload-zone {
+    background: #f0fdf4;
+    padding: 15px;
+    border-radius: 6px;
+    border: 1px dashed #10b981;
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+button {
+    background:#2563eb; color:white; border:none;
+    padding:8px 14px; border-radius:4px; cursor:pointer;
+    font-weight: bold;
+}
+/* Container global de la liste déroulante */
+.dropdown-checklist {
+    position: relative;
+    display: inline-block;
+    width: 200px;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    user-select: none;
+}
+
+/* En-tête visible */
+.dropdown-checklist-header {
+    padding: 8px;
+    padding-right: 25px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    position: relative;
+}
+
+/* Petite flèche indicatrice à droite */
+.dropdown-checklist-header::after {
+    content: "▼";
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 10px;
+    color: #666;
+}
+
+/* Le menu déroulant masqué par défaut */
+.dropdown-checklist-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background: white;
+    border: 1px solid #ccc;
+    border-top: none;
+    z-index: 1000;
+    max-height: 200px;
+    overflow-y: auto;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    border-radius: 0 0 4px 4px;
+}
+
+/* Les lignes d'options à l'intérieur */
+.dropdown-checklist-menu label {
+    display: block;
+    padding: 6px 12px;
+    cursor: pointer;
+    margin: 0;
+    transition: background 0.2s;
+}
+
+.dropdown-checklist-menu label:hover {
+    background-color: #f3f4f6;
+}
+
+.dropdown-checklist-menu input[type="checkbox"] {
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+/* Classe active gérée par JS */
+.dropdown-checklist-menu.show {
+    display: block;
+}
+
+button:hover { background:#1e4fd6; }
+table { width:100%; border-collapse:collapse; margin-top:10px; }
+thead { background:#f0f2f5; }
+th, td { padding:10px; text-align:left; border-bottom:1px solid #e5e7eb; }
+tbody tr:hover { background:#f9fafb; }
+.nav-tabs { display: flex; border-bottom: 2px solid #e5e7eb; margin-bottom: 20px; }
+.tab-btn { background: none; color: #4b5563; padding: 10px 20px; border-radius: 4px 4px 0 0; }
+.tab-btn.active { background: #2563eb; color: white; }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+.crud-form input { padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+hr { border: 0; height: 1px; background: #e5e7eb; margin: 20px 0; }
+input[type="checkbox"] { transform: scale(1.2); cursor: pointer; }
