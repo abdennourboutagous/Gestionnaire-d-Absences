@@ -5,7 +5,6 @@ function switchTab(tabId, btnElement) {
     btnElement.classList.add('active');
 }
 
-// --- GESTION ABSENCES ---
 async function loadAbsences(){
     const date = document.getElementById("date").value;
     if(!date) return alert("Sélectionnez une date");
@@ -44,7 +43,6 @@ async function loadAbsences(){
         tr.querySelector(".justifiee").value = String(r.justifiee);
     });
     
-    // NOUVEAU: Réinitialiser le bouton
     const selectAllBtn = document.getElementById("btn-select-all-abs");
     if(selectAllBtn) selectAllBtn.textContent = "Sélectionner Tout";
 }
@@ -106,10 +104,10 @@ async function deleteSelectedAbsences() {
             method: "POST", headers: {"Content-Type": "application/json"},
             body: JSON.stringify({ids: selected})
         });
-        loadAbsences(); // Recharge le tableau après suppression
+        loadAbsences();
     }
 }
-// --- GESTION ELEVES & EXCEL ---
+
 async function loadEleves() {
     const searchQuery = document.getElementById("search-eleve").value;
     const res = await fetch(`/api/eleves?search=${encodeURIComponent(searchQuery)}`);
@@ -191,15 +189,14 @@ async function deleteSelectedEleves() {
 }
 
 
-// --- GESTION ENCADRANTS ---
-// --- INTERACTION DROPDOWN CHECKLIST ---
+
 function toggleChecklistMenu(event) {
     event.stopPropagation();
     const menu = document.getElementById("en-classes-checklist");
     menu.classList.toggle("show");
 }
 
-// Mettre à jour le texte affiché dans l'en-tête selon les sélections
+
 document.addEventListener("change", function(e) {
     if (e.target.closest("#en-classes-checklist")) {
         const checkedBoxes = document.querySelectorAll("#en-classes-checklist input:checked");
@@ -214,7 +211,7 @@ document.addEventListener("change", function(e) {
     }
 });
 
-// Fermer le menu si l'utilisateur clique en dehors
+
 document.addEventListener("click", function(e) {
     const checklist = document.querySelector(".dropdown-checklist");
     if (checklist && !checklist.contains(e.target)) {
@@ -223,12 +220,11 @@ document.addEventListener("click", function(e) {
 });
 
 
-// --- ACTIONS ENCADRANTS ---
+
 async function addEncadrant() {
     const nom = document.getElementById("en-nom").value;
     const mdp = document.getElementById("en-mdp").value;
     
-    // Récupérer toutes les cases cochées de la checklist
     const checkedBoxes = document.querySelectorAll("#en-classes-checklist input:checked");
     const classes = Array.from(checkedBoxes).map(cb => cb.value);
 
@@ -242,11 +238,9 @@ async function addEncadrant() {
         body: JSON.stringify({nom, classes, mdp})
     });
     
-    // Réinitialiser les champs de saisie
     document.getElementById("en-nom").value = "";
     document.getElementById("en-mdp").value = "";
     
-    // Décocher toutes les cases de la checklist
     document.querySelectorAll("#en-classes-checklist input").forEach(cb => cb.checked = false);
     document.querySelector(".dropdown-checklist-header").textContent = "Choisir les classes...";
     document.getElementById("en-classes-checklist").classList.remove("show");
@@ -254,7 +248,6 @@ async function addEncadrant() {
     loadEncadrants();
 }
 
-// (Gardez votre fonction loadEncadrants() inchangée par rapport à l'étape précédente)
 async function loadEncadrants() {
     const res = await fetch("/api/encadrants");
     const data = await res.json();

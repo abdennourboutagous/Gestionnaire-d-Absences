@@ -64,7 +64,6 @@ def save():
     return jsonify({"status": "ok"})
 
 
-# --- ELEVES WITH BULK OPERATIONS ---
 @app.route("/api/eleves", methods=["GET", "POST"])
 def handle_eleves():
     if request.method == "GET":
@@ -114,7 +113,6 @@ def upload_excel():
         return jsonify({"error": str(e)}), 500
 
 
-# --- ENCADRANTS ---
 @app.route("/api/encadrants", methods=["GET", "POST", "DELETE"])
 def handle_encadrants():
     if request.method == "GET":

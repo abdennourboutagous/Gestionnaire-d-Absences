@@ -75,7 +75,6 @@ def delete_absences_bulk(ids):
         conn.commit()
 
 
-# --- ELEVES ROUTINES ---
 def get_eleves(search_query=""):
     with get_conn() as conn:
         with conn.cursor() as cur:
@@ -119,7 +118,6 @@ def delete_eleves_bulk(codes):
         conn.commit()
 
 
-# --- ENCADRANTS ROUTINES ---
 def get_encadrants():
     with get_conn() as conn:
         with conn.cursor() as cur:
