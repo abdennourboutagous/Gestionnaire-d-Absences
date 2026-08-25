@@ -15,6 +15,7 @@
         <button class="tab-btn active" onclick="switchTab('absences-tab', this)">Vérifier Absences</button>
         <button class="tab-btn" onclick="switchTab('eleves-tab', this); loadEleves();">Gérer Élèves</button>
         <button class="tab-btn" onclick="switchTab('encadrants-tab', this); loadEncadrants();">Gérer Encadrants</button>
+        <button class="tab-btn settings-btn" title="Paramètres" aria-label="Paramètres" onclick="switchTab('settings-tab', this); loadSettings();">&#9881;</button>
     </div>
 
     <div id="absences-tab" class="tab-content active">
@@ -37,6 +38,14 @@
                 <button onclick="toggleSelectAllAbsences(this)" id="btn-select-all-abs" style="background:#6b7280;">Sélectionner Tout</button>
                 <button onclick="deleteSelectedAbsences()" style="background:#dc2626;">Supprimer Sélection</button>
             </div>
+        </div>
+
+        <div class="range-delete controls">
+            <label for="delete-start-date">Supprimer du</label>
+            <input type="date" id="delete-start-date">
+            <label for="delete-end-date">au</label>
+            <input type="date" id="delete-end-date">
+            <button onclick="deleteAbsencesByDateRange()" style="background:#dc2626;">Supprimer la période</button>
         </div>
 
         <div class="table-shell">
@@ -138,6 +147,28 @@
             <tbody></tbody>
         </table>
         </div>
+    </div>
+
+    <div id="settings-tab" class="tab-content">
+        <div class="section-heading compact-heading">
+            <div>
+                <p class="section-kicker">Configuration</p>
+                <h2>Paramètres de connexion</h2>
+            </div>
+        </div>
+        <form id="settings-form" class="settings-form" onsubmit="saveSettings(event)">
+            <label>Nom de la base de données<input type="text" id="setting-db-name" required></label>
+            <label>Utilisateur PostgreSQL<input type="text" id="setting-db-user" required></label>
+            <label>Mot de passe PostgreSQL<input type="password" id="setting-db-pass" required></label>
+            <label>Hôte PostgreSQL<input type="text" id="setting-db-host" required></label>
+            <label>Code CPGE<input type="text" id="setting-code" required></label>
+            <label>Mot de passe CPGE<input type="password" id="setting-mdp" required></label>
+            <label class="password-toggle"><input type="checkbox" onchange="toggleSettingsPasswords(this)"> Afficher les mots de passe</label>
+            <div class="settings-actions">
+                <button type="submit">Enregistrer les paramètres</button>
+                <span id="settings-status" role="status"></span>
+            </div>
+        </form>
     </div>
 </div>
 

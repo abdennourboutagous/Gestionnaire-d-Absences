@@ -42,12 +42,14 @@ h2 { margin: 0; font-size: 25px; }
 .tab-btn { flex: 1; border: 0; border-radius: 0; color: var(--muted); background: transparent; padding: 13px 16px 14px; font: 600 13px 'DM Sans', sans-serif; cursor: pointer; transition: color .12s ease, background .12s ease; }
 .tab-btn:hover { color: var(--ink); background: #f7f8fb; }
 .tab-btn.active { color: var(--blue); background: transparent; box-shadow: inset 0 -2px 0 var(--blue); }
+.settings-btn { flex: 0 0 52px; font-size: 20px; line-height: 1; }
 .tab-content { display: none; }
 .tab-content.active { display: block; }
 .section-heading { justify-content: space-between; gap: 22px; margin-bottom: 24px; }
 .compact-heading { margin-bottom: 25px; }
 .date-control label { display: block; margin-bottom: 7px; color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
 .inline-control { display: flex; gap: 8px; }
+.range-delete { flex-wrap: wrap; }
 
 .controls, .table-actions-bar { gap: 10px; margin-bottom: 20px; }
 .table-actions-bar { justify-content: space-between; }
@@ -134,10 +136,19 @@ table { width:100%; border-collapse:collapse; margin-top:10px; }
 thead { background: #f8f9fb; }
 th, td { padding: 14px 15px; text-align: left; border-bottom: 1px solid #eef0f4; font-size: 13px; }
 th { color: var(--muted); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; }
+.loading-message { padding: 28px 15px; color: var(--muted); text-align: center; font-style: italic; }
 tbody tr:last-child td { border-bottom: 0; }
 tbody tr:hover { background: #fafcff; }
 .actions { margin-top: 18px; }
 .crud-form { flex-wrap: wrap; }
+.settings-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; max-width: 760px; }
+.settings-form label { display: grid; gap: 7px; color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
+.settings-form input { width: 100%; }
+.settings-form .password-toggle { display: flex; grid-column: 1 / -1; grid-template-columns: 16px auto; align-items: center; gap: 8px; text-transform: none; letter-spacing: 0; }
+.settings-form .password-toggle input { width: 16px; }
+.settings-actions { display: flex; grid-column: 1 / -1; align-items: center; gap: 14px; }
+#settings-status.success { color: var(--green); }
+#settings-status.error { color: var(--red); }
 hr { border: 0; height: 1px; background: var(--line); margin: 25px 0; }
 input[type="checkbox"] { width: 16px; min-height: 16px; accent-color: var(--blue); cursor: pointer; }
 
@@ -147,7 +158,9 @@ input[type="checkbox"] { width: 16px; min-height: 16px; accent-color: var(--blue
     .page-header { margin-bottom: 28px; }
     .nav-tabs { flex-direction: column; margin-bottom: 28px; }
     .date-control, .inline-control, .inline-control input, .inline-control button { width: 100%; }
+    .range-delete input, .range-delete button { flex: 1 1 100%; width: 100%; }
     .table-actions-bar { align-items: stretch; flex-direction: column; }
     .search-box input { width: 100%; }
     .crud-form input, .crud-form button, .dropdown-checklist { flex: 1 1 100%; width: 100%; }
+    .settings-form { grid-template-columns: 1fr; }
 }

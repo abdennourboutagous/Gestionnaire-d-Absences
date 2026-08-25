@@ -5,46 +5,77 @@ function switchTab(tabId, btnElement) {
     btnElement.classList.add('active');
 }
 
+function showLoading(selector, colspan, message = "Chargement...") {
+    const tbody = document.querySelector(selector);
+    if (tbody) {
+        tbody.innerHTML = `<tr><td colspan="${colspan}" class="loading-message">${message}</td></tr>`;
+    }
+}
+
+const CONTENT_LOAD_TIMEOUT_MS = 10000;
+
+async function fetchWithTimeout(url, options = {}) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), CONTENT_LOAD_TIMEOUT_MS);
+
+    try {
+        return await fetch(url, {...options, signal: controller.signal});
+    } finally {
+        clearTimeout(timeoutId);
+    }
+}
+
 async function loadAbsences(){
     const date = document.getElementById("date").value;
     if(!date) return alert("Sélectionnez une date");
 
-    const res = await fetch(`/api/absences?date=${date}`);
-    const data = await res.json();
-    const tbody = document.querySelector("#table tbody");
-    tbody.innerHTML = "";
+    showLoading("#table tbody", 7, "Chargement des absences...");
+    try {
+        const res = await fetchWithTimeout(`/api/absences?date=${date}`);
+        if (!res.ok) throw new Error(`Erreur serveur (${res.status})`);
 
-    if(data.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:gray;">Aucune absence.</td></tr>`;
-        return;
+        const data = await res.json();
+        const tbody = document.querySelector("#table tbody");
+        tbody.innerHTML = "";
+
+        if(data.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:gray;">Aucune absence.</td></tr>`;
+            return;
+        }
+
+        data.forEach(r => {
+            const tr = document.createElement("tr");
+            tr.dataset.id = r.id;
+            tr.dataset.date = r.date;
+            tr.innerHTML = `
+                <td><input type="checkbox" class="absence-select" value="${r.id}"></td>
+                <td>${r.classe}</td><td>${r.nom}</td><td>${r.debut}</td><td>${r.fin}</td>
+                <td>
+                    <select class="motif">
+                        <option value="5">Maladie</option><option value="6">Concours français</option>
+                        <option value="7">Autre</option><option value="8">Grève des élèves</option>
+                        <option value="9">Sanction</option>
+                    </select>
+                </td>
+                <td>
+                    <select class="justifiee">
+                        <option value="true">Oui</option><option value="false">Non</option>
+                    </select>
+                </td>`;
+            tbody.appendChild(tr);
+            tr.querySelector(".motif").value = r.motif;
+            tr.querySelector(".justifiee").value = String(r.justifiee);
+        });
+
+        const selectAllBtn = document.getElementById("btn-select-all-abs");
+        if(selectAllBtn) selectAllBtn.textContent = "Sélectionner Tout";
+    } catch (error) {
+        console.error(error);
+        const message = error.name === "AbortError"
+            ? "Le chargement a dépassé le délai."
+            : "Impossible de charger les absences.";
+        showLoading("#table tbody", 7, message);
     }
-
-    data.forEach(r => {
-        const tr = document.createElement("tr");
-        tr.dataset.id = r.id;
-        tr.dataset.date = r.date;
-        tr.innerHTML = `
-            <td><input type="checkbox" class="absence-select" value="${r.id}"></td>
-            <td>${r.classe}</td><td>${r.nom}</td><td>${r.debut}</td><td>${r.fin}</td>
-            <td>
-                <select class="motif">
-                    <option value="5">Maladie</option><option value="6">Concours français</option>
-                    <option value="7">Autre</option><option value="8">Grève des élèves</option>
-                    <option value="9">Sanction</option>
-                </select>
-            </td>
-            <td>
-                <select class="justifiee">
-                    <option value="true">Oui</option><option value="false">Non</option>
-                </select>
-            </td>`;
-        tbody.appendChild(tr);
-        tr.querySelector(".motif").value = r.motif;
-        tr.querySelector(".justifiee").value = String(r.justifiee);
-    });
-    
-    const selectAllBtn = document.getElementById("btn-select-all-abs");
-    if(selectAllBtn) selectAllBtn.textContent = "Sélectionner Tout";
 }
 
 async function saveAbsences() {
@@ -108,22 +139,60 @@ async function deleteSelectedAbsences() {
     }
 }
 
+async function deleteAbsencesByDateRange() {
+    const startDate = document.getElementById("delete-start-date").value;
+    const endDate = document.getElementById("delete-end-date").value;
+
+    if (!startDate || !endDate) return alert("Sélectionnez les deux dates.");
+    if (startDate > endDate) return alert("La date de début doit précéder la date de fin.");
+
+    const period = `du ${startDate} au ${endDate}`;
+    if (!confirm(`Supprimer toutes les absences ${period} ?`)) return;
+
+    try {
+        const res = await fetch("/api/absences/delete-range", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({start_date: startDate, end_date: endDate})
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || `Erreur serveur (${res.status})`);
+
+        alert(`${data.deleted_count} absence(s) supprimée(s).`);
+        loadAbsences();
+    } catch (error) {
+        console.error(error);
+        alert("Impossible de supprimer la période : " + error.message);
+    }
+}
+
 async function loadEleves() {
     const searchQuery = document.getElementById("search-eleve").value;
-    const res = await fetch(`/api/eleves?search=${encodeURIComponent(searchQuery)}`);
-    const data = await res.json();
-    const tbody = document.querySelector("#eleves-table tbody");
-    tbody.innerHTML = "";
-    
-    data.forEach(r => {
-        tbody.innerHTML += `<tr>
-            <td><input type="checkbox" class="eleve-select" value="${r.code}"></td>
-            <td>${r.nom}</td>
-            <td>${r.classe}</td>
-            <td>${r.code}</td>
-        </tr>`;
-    });
-    document.getElementById("btn-select-all").textContent = "Sélectionner Tout";
+    showLoading("#eleves-table tbody", 4, "Chargement des élèves...");
+    try {
+        const res = await fetchWithTimeout(`/api/eleves?search=${encodeURIComponent(searchQuery)}`);
+        if (!res.ok) throw new Error(`Erreur serveur (${res.status})`);
+
+        const data = await res.json();
+        const tbody = document.querySelector("#eleves-table tbody");
+        tbody.innerHTML = "";
+
+        data.forEach(r => {
+            tbody.innerHTML += `<tr>
+                <td><input type="checkbox" class="eleve-select" value="${r.code}"></td>
+                <td>${r.nom}</td>
+                <td>${r.classe}</td>
+                <td>${r.code}</td>
+            </tr>`;
+        });
+        document.getElementById("btn-select-all").textContent = "Sélectionner Tout";
+    } catch (error) {
+        console.error(error);
+        const message = error.name === "AbortError"
+            ? "Le chargement a dépassé le délai."
+            : "Impossible de charger les élèves.";
+        showLoading("#eleves-table tbody", 4, message);
+    }
 }
 
 async function addEleve() {
@@ -249,18 +318,29 @@ async function addEncadrant() {
 }
 
 async function loadEncadrants() {
-    const res = await fetch("/api/encadrants");
-    const data = await res.json();
-    const tbody = document.querySelector("#encadrants-table tbody");
-    tbody.innerHTML = "";
-    
-    data.forEach(r => {
-        const classesAffichees = Array.isArray(r.classes) ? r.classes.join(", ") : r.classes;
-        tbody.innerHTML += `<tr>
-            <td>${r.nom}</td><td>${classesAffichees}</td><td>${r.mdp}</td>
-            <td><button style="background:#dc2626;" onclick="deleteEncadrant('${r.nom}')">Supprimer</button></td>
-        </tr>`;
-    });
+    showLoading("#encadrants-table tbody", 4, "Chargement des encadrants...");
+    try {
+        const res = await fetchWithTimeout("/api/encadrants");
+        if (!res.ok) throw new Error(`Erreur serveur (${res.status})`);
+
+        const data = await res.json();
+        const tbody = document.querySelector("#encadrants-table tbody");
+        tbody.innerHTML = "";
+
+        data.forEach(r => {
+            const classesAffichees = Array.isArray(r.classes) ? r.classes.join(", ") : r.classes;
+            tbody.innerHTML += `<tr>
+                <td>${r.nom}</td><td>${classesAffichees}</td><td>${r.mdp}</td>
+                <td><button style="background:#dc2626;" onclick="deleteEncadrant('${r.nom}')">Supprimer</button></td>
+            </tr>`;
+        });
+    } catch (error) {
+        console.error(error);
+        const message = error.name === "AbortError"
+            ? "Le chargement a dépassé le délai."
+            : "Impossible de charger les encadrants.";
+        showLoading("#encadrants-table tbody", 4, message);
+    }
 }
 
 async function deleteEncadrant(nom) {
@@ -268,4 +348,57 @@ async function deleteEncadrant(nom) {
         await fetch(`/api/encadrants?nom=${nom}`, { method: "DELETE" });
         loadEncadrants();
     }
+}
+
+async function loadSettings() {
+    const status = document.getElementById("settings-status");
+    status.textContent = "Chargement des paramètres...";
+    status.className = "loading-message";
+    try {
+        const res = await fetchWithTimeout("/api/settings");
+        if (!res.ok) throw new Error(`Erreur serveur (${res.status})`);
+
+        const settings = await res.json();
+        document.getElementById("setting-db-name").value = settings.DB_NAME || "";
+        document.getElementById("setting-db-user").value = settings.DB_USER || "";
+        document.getElementById("setting-db-pass").value = settings.DB_PASS || "";
+        document.getElementById("setting-db-host").value = settings.DB_HOST || "";
+        document.getElementById("setting-code").value = settings.CODE || "";
+        document.getElementById("setting-mdp").value = settings.MDP || "";
+        status.textContent = "";
+        status.className = "";
+    } catch (error) {
+        console.error(error);
+        status.textContent = error.name === "AbortError"
+            ? "Le chargement a dépassé le délai."
+            : "Impossible de charger les paramètres.";
+        status.className = "error";
+    }
+}
+
+async function saveSettings(event) {
+    event.preventDefault();
+    const settings = {
+        DB_NAME: document.getElementById("setting-db-name").value,
+        DB_USER: document.getElementById("setting-db-user").value,
+        DB_PASS: document.getElementById("setting-db-pass").value,
+        DB_HOST: document.getElementById("setting-db-host").value,
+        CODE: document.getElementById("setting-code").value,
+        MDP: document.getElementById("setting-mdp").value
+    };
+    const res = await fetch("/api/settings", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(settings)
+    });
+    const data = await res.json();
+    const status = document.getElementById("settings-status");
+    status.textContent = data.status === "ok" ? "Paramètres enregistrés." : data.error;
+    status.className = data.status === "ok" ? "success" : "error";
+}
+
+function toggleSettingsPasswords(checkbox) {
+    ["setting-db-pass", "setting-mdp"].forEach(id => {
+        document.getElementById(id).type = checkbox.checked ? "text" : "password";
+    });
 }
