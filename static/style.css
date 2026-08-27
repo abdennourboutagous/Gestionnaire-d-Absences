@@ -140,6 +140,11 @@ th { color: var(--muted); font-size: 11px; letter-spacing: .06em; text-transform
 tbody tr:last-child td { border-bottom: 0; }
 tbody tr:hover { background: #fafcff; }
 .actions { margin-top: 18px; }
+.actions { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
+#automation-status { color: var(--muted); font-size: 13px; }
+#automation-status.running { color: var(--blue); }
+#automation-status.waiting_for_finish { color: var(--green); }
+#automation-status.error { color: var(--red); }
 .crud-form { flex-wrap: wrap; }
 .settings-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; max-width: 760px; }
 .settings-form label { display: grid; gap: 7px; color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }

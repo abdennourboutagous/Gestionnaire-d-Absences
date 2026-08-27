@@ -13,6 +13,7 @@ function showLoading(selector, colspan, message = "Chargement...") {
 }
 
 const CONTENT_LOAD_TIMEOUT_MS = 10000;
+const AUTOMATION_POLL_INTERVAL_MS = 1000;
 
 async function fetchWithTimeout(url, options = {}) {
     const controller = new AbortController();
@@ -402,3 +403,49 @@ function toggleSettingsPasswords(checkbox) {
         document.getElementById(id).type = checkbox.checked ? "text" : "password";
     });
 }
+
+async function pollAutomationStatus() {
+    const statusElement = document.getElementById("automation-status");
+    const finishButton = document.getElementById("finish-automation");
+    if (!statusElement || !finishButton) return;
+
+    try {
+        const res = await fetchWithTimeout("/api/automation/status");
+        if (!res.ok) throw new Error(`Erreur serveur (${res.status})`);
+
+        const data = await res.json();
+        finishButton.hidden = data.status !== "waiting_for_finish";
+        statusElement.className = data.status;
+
+        if (data.status === "running") {
+            statusElement.textContent = "Remplissage en cours...";
+        } else if (data.status === "waiting_for_finish") {
+            statusElement.textContent = "Remplissage terminé. Vérifiez le portail.";
+        } else if (data.status === "error") {
+            statusElement.textContent = data.error || "Erreur pendant l'automatisation.";
+        } else {
+            statusElement.textContent = "";
+            statusElement.className = "";
+        }
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+async function finishAutomation() {
+    const finishButton = document.getElementById("finish-automation");
+    finishButton.disabled = true;
+
+    try {
+        const res = await fetch("/api/automation/finish", {method: "POST"});
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || `Erreur serveur (${res.status})`);
+        await pollAutomationStatus();
+    } catch (error) {
+        finishButton.disabled = false;
+        alert("Impossible de terminer l'automatisation : " + error.message);
+    }
+}
+
+pollAutomationStatus();
+setInterval(pollAutomationStatus, AUTOMATION_POLL_INTERVAL_MS);

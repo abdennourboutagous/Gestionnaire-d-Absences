@@ -11,6 +11,15 @@ from settings import load_settings, save_settings
 
 app = Flask(__name__)
 WEBVIEW_WINDOW = None
+AUTOMATION_LOCK = threading.Lock()
+AUTOMATION_STATE_LOCK = threading.Lock()
+AUTOMATION_STATE = {"status": "idle", "date": None, "error": None}
+AUTOMATION_FINISH_EVENT = None
+
+
+def set_automation_state(status, date=None, error=None):
+    with AUTOMATION_STATE_LOCK:
+        AUTOMATION_STATE.update(status=status, date=date, error=error)
 
 
 def report_error(title):
@@ -20,11 +29,20 @@ def report_error(title):
         WEBVIEW_WINDOW.evaluate_js(f"console.error({json.dumps(message)})")
 
 
-def safe_run_playwright(date):
+def safe_run_playwright(date, finish_event):
     try:
-        run_playwright(date)
+        run_playwright(
+            date,
+            on_ready_to_finish=lambda: set_automation_state("waiting_for_finish", date),
+            finish_event=finish_event,
+        )
     except Exception:
+        set_automation_state("error", date, "Erreur pendant l'automatisation.")
         report_error(f"Erreur automation ({date})")
+    else:
+        set_automation_state("idle")
+    finally:
+        AUTOMATION_LOCK.release()
 
 
 @app.route("/")
@@ -75,15 +93,53 @@ def delete_absences_range():
 
 @app.route("/api/save", methods=["POST"])
 def save():
+    global AUTOMATION_FINISH_EVENT
     rows = request.json
+    if not isinstance(rows, list) or not rows:
+        return jsonify({"status": "error", "error": "Aucune absence à enregistrer."}), 400
+
+    if not AUTOMATION_LOCK.acquire(blocking=False):
+        return jsonify({
+            "status": "error",
+            "error": "Une automatisation est déjà en cours."
+        }), 409
+
     try:
         update_absences(rows)
     except Exception:
+        AUTOMATION_LOCK.release()
         report_error("Erreur update_absences")
         return jsonify({"status": "error", "error": "Erreur lors de l'enregistrement en base."}), 500
 
     date = rows[0]["date"]
-    threading.Thread(target=safe_run_playwright, args=(date,), daemon=True).start()
+    AUTOMATION_FINISH_EVENT = threading.Event()
+    set_automation_state("running", date)
+    threading.Thread(
+        target=safe_run_playwright,
+        args=(date, AUTOMATION_FINISH_EVENT),
+        daemon=True,
+    ).start()
+    return jsonify({"status": "ok"})
+
+
+@app.route("/api/automation/status")
+def automation_status():
+    with AUTOMATION_STATE_LOCK:
+        return jsonify(AUTOMATION_STATE.copy())
+
+
+@app.route("/api/automation/finish", methods=["POST"])
+def finish_automation():
+    with AUTOMATION_STATE_LOCK:
+        if AUTOMATION_STATE["status"] != "waiting_for_finish":
+            return jsonify({
+                "status": "error",
+                "error": "L'automatisation n'est pas prête à être terminée."
+            }), 409
+        finish_event = AUTOMATION_FINISH_EVENT
+
+    if finish_event is not None:
+        finish_event.set()
     return jsonify({"status": "ok"})
 
 
