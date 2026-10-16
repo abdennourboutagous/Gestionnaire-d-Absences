@@ -52,7 +52,7 @@
         <table id="table">
             <thead>
                 <tr>
-                    <th width="40px">Sélec.</th> <!-- NOUVEAU -->
+                    <th width="40px">Sélec.</th>
                     <th>Classe</th><th>Nom</th><th>Début</th><th>Fin</th><th>Motif</th><th>Justifiée</th>
                 </tr>
             </thead>
@@ -80,8 +80,8 @@
 
         <div class="crud-form controls">
             <input type="text" id="el-nom" placeholder="Nom Complet">
-            <input type="text" id="el-classe" placeholder="Classe (ex: MPSI)">
-            <input type="text" id="el-code" placeholder="Code / CNE">
+            <input type="text" id="el-classe" placeholder="Classe">
+            <input type="text" id="el-code" placeholder="Code Massar">
             <button onclick="addEleve()">Ajouter</button>
         </div>
         <hr>
@@ -93,7 +93,7 @@
 
         <div class="table-actions-bar">
             <div class="search-box">
-                <input type="text" id="search-eleve" placeholder="Rechercher nom, CNE, classe..." oninput="loadEleves()">
+                <input type="text" id="search-eleve" placeholder="Rechercher par nom, CNE, classe..." oninput="loadEleves()">
             </div>
             <div class="bulk-buttons">
                 <button onclick="toggleSelectAllEleves(this)" id="btn-select-all" style="background:#6b7280;">Sélectionner Tout</button>
@@ -108,7 +108,7 @@
                     <th width="40px">Sélec.</th>
                     <th>Nom</th>
                     <th>Classe</th>
-                    <th>Code (CNE)</th>
+                    <th>Code Massar</th>
                 </tr>
             </thead>
             <tbody></tbody>
