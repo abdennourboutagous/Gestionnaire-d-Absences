@@ -2,8 +2,6 @@
 
 ## Build on Windows 11
 
-Requirements:
-
 Open PowerShell in the project folder and run:
 
 ```powershell
