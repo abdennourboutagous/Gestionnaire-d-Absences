@@ -15,15 +15,3 @@ The script installs the Python dependencies, downloads the Playwright Chromium b
 ```text
 dist\GestionnaireAbsences\
 ```
-
-## Source mode
-
-To run without PyInstaller:
-
-```powershell
-python -m venv .venv
-.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-python -m playwright install chromium
-python app.py
-```
